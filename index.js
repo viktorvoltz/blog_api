@@ -109,11 +109,11 @@ app.post("/post", async (req, res) => {
     }
 })
 
-app.put("/post/:post_Id", async (req, res) => {
+app.patch("/post/:post_Id", async (req, res) => {
     const data = req.body
     try {
 
-        const post = await Post.findOne({_id: req.params.post_Id}).update
+        const post = await Post.findOne({_id: req.params.post_Id})
 
         if(!post) return res.status(400).send({message: "post does not exist"})
 
@@ -121,7 +121,9 @@ app.put("/post/:post_Id", async (req, res) => {
         const newpost = await Post.findByIdAndUpdate(req.params.post_Id, {$set: {
             title: data.title,
             body: data.body
-        }})
+        }},
+        { new: true }
+        )
 
         res.status(200).send({
             message: "post updated", data: newpost
@@ -135,32 +137,33 @@ app.put("/post/:post_Id", async (req, res) => {
 })
 
 app.get('/post', async (req, res) => {
-    try{
-        const posts = await Post.find().populate("user_id", "email ful_name")
-
-        res.status(200).send({message: "get post", data: posts});
-    }catch(error){
-
+    try {
+      const posts = await Post.find().populate("userId", "email full_name")
+      res.status(200).send({ message: "All posts", data: posts })
+    } catch (error) {
+      res.status(400).send({ message: "Couldn't get posts", error })
+      console.log(error)
     }
-})
+  })
+
 
 app.get('/post/:post_id', async (req, res) => {
     try{
-        const posts = await Post.findOne(req.params.post_id).populate("user_id", "email ful_name")
+        const posts = await Post.findById(req.params.post_id).populate("userId", "email ful_name")
 
-        res.status(200).send({message: "get post", data: posts});
+        res.status(200).send({message: "get a post", data: posts});
     }catch(error){
-
+        res.status(400).send({ message: "Couldn't get a post", error })
     }
 })
 
 app.delete('/post/:post_id', async (req, res) => {
     try{
-        const posts = await Post.findByIdAndDelete(req.params.post_id).populate("user_id", "email ful_name")
+        const posts = await Post.findByIdAndDelete(req.params.post_id)
 
         res.status(200).send({message: "delete post", data: posts});
     }catch(error){
-
+        res.status(400).send({ message: "couldnt delete post", error })
     }
 })
 
