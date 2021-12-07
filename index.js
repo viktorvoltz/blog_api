@@ -5,6 +5,8 @@ const User = require("./models/user.js");
 const jwt = require("jsonwebtoken");
 const JWT_SECRETKEY = "jhvcjhdbvjbadjkfbvjhdjbhjhjbjkbjhbhj";
 
+const Post = require("./models/posts.js")
+
 
 
 
@@ -45,8 +47,8 @@ app.post('/auth/signup', async (req, res) => {
             message: "user created", data: {
                 token,
                 email: user.email,
-                full_name: user.full_name
-
+                full_name: user.full_name,
+                user_id: user._id
             }
         })
     } catch (error) {
@@ -71,7 +73,7 @@ app.post('/auth/signin', async (req, res) => {
         const token = jwt.sign({ user_id: user._id }, JWT_SECRETKEY)
 
         res.status(201).send({
-            message: "user signedin", 
+            message: "user signedin",
             data: {
                 token,
                 email: user.email,
@@ -85,6 +87,26 @@ app.post('/auth/signin', async (req, res) => {
     }
 
 
+})
+
+app.post("/post", async (req, res) => {
+    const data = req.body
+    try {
+        const post = await new Post({
+            title: data.title,
+            body: data.body,
+            userId: data.userId
+        }).save()
+
+        res.status(200).send({
+            message: "post created", data: post
+        });
+    } catch (error) {
+        res.status(400).send({
+            message: "post not created",
+            error
+        })
+    }
 })
 
 app.listen(port, () => {
