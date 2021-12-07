@@ -109,6 +109,61 @@ app.post("/post", async (req, res) => {
     }
 })
 
+app.put("/post/:post_Id", async (req, res) => {
+    const data = req.body
+    try {
+
+        const post = await Post.findOne({_id: req.params.post_Id}).update
+
+        if(!post) return res.status(400).send({message: "post does not exist"})
+
+
+        const newpost = await Post.findByIdAndUpdate(req.params.post_Id, {$set: {
+            title: data.title,
+            body: data.body
+        }})
+
+        res.status(200).send({
+            message: "post updated", data: newpost
+        });
+    } catch (error) {
+        res.status(400).send({
+            message: "post wasn't updated",
+            error
+        })
+    }
+})
+
+app.get('/post', async (req, res) => {
+    try{
+        const posts = await Post.find().populate("user_id", "email ful_name")
+
+        res.status(200).send({message: "get post", data: posts});
+    }catch(error){
+
+    }
+})
+
+app.get('/post/:post_id', async (req, res) => {
+    try{
+        const posts = await Post.findOne(req.params.post_id).populate("user_id", "email ful_name")
+
+        res.status(200).send({message: "get post", data: posts});
+    }catch(error){
+
+    }
+})
+
+app.delete('/post/:post_id', async (req, res) => {
+    try{
+        const posts = await Post.findByIdAndDelete(req.params.post_id).populate("user_id", "email ful_name")
+
+        res.status(200).send({message: "delete post", data: posts});
+    }catch(error){
+
+    }
+})
+
 app.listen(port, () => {
     try {
         connectToMongoDB();
